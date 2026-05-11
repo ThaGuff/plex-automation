@@ -29,9 +29,77 @@ May 9, 09:13 AM
 models.py
 2 KB
 May 11, 10:25 AM
-backend/app/models/__init__.py
-1
+backend/app/models/models.py
+1from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey
+2from sqlalchemy.sql import func
+3from app.database.database import Base
+4
 
+5
+
+6class User(Base):
+7    __tablename__ = "users"
+8    id = Column(Integer, primary_key=True, index=True)
+9    email = Column(String(255), unique=True, index=True, nullable=False)
+10    hashed_password = Column(String(255), nullable=False)
+11    name = Column(String(255), nullable=False)
+12    created_at = Column(DateTime(timezone=True), server_default=func.now())
+13
+
+14
+
+15class Workflow(Base):
+16    __tablename__ = "workflows"
+17    id = Column(Integer, primary_key=True, index=True)
+18    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+19    name = Column(String(255), nullable=False)
+20    definition = Column(JSON, nullable=True)
+21    status = Column(String(50), default="draft")
+22    created_at = Column(DateTime(timezone=True), server_default=func.now())
+23    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+24
+
+25
+
+26class Execution(Base):
+27    __tablename__ = "executions"
+28    id = Column(Integer, primary_key=True, index=True)
+29    workflow_id = Column(Integer, ForeignKey("workflows.id"), nullable=False)
+30    status = Column(String(50), default="pending")
+31    result = Column(JSON, nullable=True)
+32    started_at = Column(DateTime(timezone=True), server_default=func.now())
+33    finished_at = Column(DateTime(timezone=True), nullable=True)
+34
+
+35
+
+36class Integration(Base):
+37    __tablename__ = "integrations"
+38    id = Column(Integer, primary_key=True, index=True)
+39    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+40    provider = Column(String(100), nullable=False)
+41    access_token = Column(Text, nullable=True)
+42    refresh_token = Column(Text, nullable=True)
+43    metadata = Column(JSON, nullable=True)
+44    created_at = Column(DateTime(timezone=True), server_default=func.now())
+45
+
+46
+
+47class Secret(Base):
+48    __tablename__ = "secrets"
+49    id = Column(Integer, primary_key=True, index=True)
+50    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+51    name = Column(String(255), nullable=False)
+52    encrypted_value = Column(Text, nullable=False)
+53
+
+54
+
+55class Config(Base):
+56    __tablename__ = "configs"
+57    key = Column(String(255), primary_key=True)
+58    value = Column(Text, nullable=True)
 Agent:
 AGENT-LEAD
 Reset chat
